@@ -156,4 +156,77 @@ final class DependencyInjection
             self::getUserRepository()
         );
     }
+
+    // ------------------------------------------------------------------
+    // Aplicacion (ejercicio 21)
+    // ------------------------------------------------------------------
+
+    public static function getAplicacionPersistenceMapper(): AplicacionPersistenceMapper
+    {
+        ClassLoader::loadClass('AplicacionPersistenceMapper');
+
+        return new AplicacionPersistenceMapper();
+    }
+
+    public static function getAplicacionRepository(): AplicacionRepositoryMySQL
+    {
+        ClassLoader::loadClass('AplicacionRepositoryMySQL');
+
+        return new AplicacionRepositoryMySQL(
+            self::getPdo(),
+            self::getAplicacionPersistenceMapper()
+        );
+    }
+
+    public static function getCreateAplicacionUseCase(): CreateAplicacionUseCase
+    {
+        ClassLoader::loadClass('CreateAplicacionService');
+        $repository = self::getAplicacionRepository();
+
+        return new CreateAplicacionService(
+            $repository,
+            $repository
+        );
+    }
+
+    public static function getUpdateAplicacionUseCase(): UpdateAplicacionUseCase
+    {
+        ClassLoader::loadClass('UpdateAplicacionService');
+        $repository = self::getAplicacionRepository();
+
+        return new UpdateAplicacionService(
+            $repository,
+            $repository,
+            $repository
+        );
+    }
+
+    public static function getGetAplicacionByIdUseCase(): GetAplicacionByIdUseCase
+    {
+        ClassLoader::loadClass('GetAplicacionByIdService');
+
+        return new GetAplicacionByIdService(
+            self::getAplicacionRepository()
+        );
+    }
+
+    public static function getGetAllAplicacionesUseCase(): GetAllAplicacionesUseCase
+    {
+        ClassLoader::loadClass('GetAllAplicacionesService');
+
+        return new GetAllAplicacionesService(
+            self::getAplicacionRepository()
+        );
+    }
+
+    public static function getDeleteAplicacionUseCase(): DeleteAplicacionUseCase
+    {
+        ClassLoader::loadClass('DeleteAplicacionService');
+        $repository = self::getAplicacionRepository();
+
+        return new DeleteAplicacionService(
+            $repository,
+            $repository
+        );
+    }
 }
