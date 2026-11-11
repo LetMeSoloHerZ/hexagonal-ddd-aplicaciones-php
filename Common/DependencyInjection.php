@@ -23,8 +23,21 @@ final class DependencyInjection
             database: EnvLoader::get('DB_DATABASE', 'crud_usuarios'),
             username: EnvLoader::get('DB_USERNAME', 'root'),
             password: EnvLoader::get('DB_PASSWORD', ''),
-            charset: EnvLoader::get('DB_CHARSET', 'utf8mb4')
+            charset: EnvLoader::get('DB_CHARSET', 'utf8mb4'),
+            ssl: self::envFlag('DB_SSL', false),
+            sslCa: EnvLoader::get('DB_SSL_CA', ''),
+            sslVerify: self::envFlag('DB_SSL_VERIFY', true)
         );
+    }
+
+    /**
+     * Lee una variable de entorno booleana (1/true/yes/on => true).
+     */
+    private static function envFlag(string $key, bool $default): bool
+    {
+        $value = strtolower(EnvLoader::get($key, $default ? 'true' : 'false'));
+
+        return in_array($value, array('1', 'true', 'yes', 'on'), true);
     }
 
     public static function getPdo(): PDO
