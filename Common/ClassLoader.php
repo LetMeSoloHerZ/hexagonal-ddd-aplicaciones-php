@@ -79,6 +79,61 @@ final class ClassLoader
         'View' => 'Infrastructure/Entrypoints/Web/Presentation/View.php',
         'Flash' => 'Infrastructure/Entrypoints/Web/Presentation/Flash.php',
 
+        // ---- Aplicacion (ejercicio 21) ----
+        'InvalidAplicacionException' => 'Domain/Exceptions/InvalidAplicacionException.php',
+        'AplicacionNotFoundException' => 'Domain/Exceptions/AplicacionNotFoundException.php',
+        'AplicacionAlreadyExistsException' => 'Domain/Exceptions/AplicacionAlreadyExistsException.php',
+
+        'CategoriaAplicacionEnum' => 'Domain/Enums/CategoriaAplicacionEnum.php',
+        'SistemaOperativoEnum' => 'Domain/Enums/SistemaOperativoEnum.php',
+        'LicenciaEnum' => 'Domain/Enums/LicenciaEnum.php',
+
+        'AplicacionId' => 'Domain/ValueObjects/AplicacionId.php',
+        'AplicacionNombre' => 'Domain/ValueObjects/AplicacionNombre.php',
+        'AplicacionCorreo' => 'Domain/ValueObjects/AplicacionCorreo.php',
+        'AplicacionWeb' => 'Domain/ValueObjects/AplicacionWeb.php',
+        'Precio' => 'Domain/ValueObjects/Precio.php',
+        'TamanoInstalador' => 'Domain/ValueObjects/TamanoInstalador.php',
+        'AplicacionModel' => 'Domain/Models/AplicacionModel.php',
+
+        'SaveAplicacionPort' => 'Application/Ports/Out/SaveAplicacionPort.php',
+        'UpdateAplicacionPort' => 'Application/Ports/Out/UpdateAplicacionPort.php',
+        'GetAplicacionByIdPort' => 'Application/Ports/Out/GetAplicacionByIdPort.php',
+        'GetAplicacionByNombrePort' => 'Application/Ports/Out/GetAplicacionByNombrePort.php',
+        'GetAllAplicacionesPort' => 'Application/Ports/Out/GetAllAplicacionesPort.php',
+        'DeleteAplicacionPort' => 'Application/Ports/Out/DeleteAplicacionPort.php',
+
+        'CreateAplicacionUseCase' => 'Application/Ports/In/CreateAplicacionUseCase.php',
+        'UpdateAplicacionUseCase' => 'Application/Ports/In/UpdateAplicacionUseCase.php',
+        'GetAplicacionByIdUseCase' => 'Application/Ports/In/GetAplicacionByIdUseCase.php',
+        'GetAllAplicacionesUseCase' => 'Application/Ports/In/GetAllAplicacionesUseCase.php',
+        'DeleteAplicacionUseCase' => 'Application/Ports/In/DeleteAplicacionUseCase.php',
+
+        'CreateAplicacionCommand' => 'Application/Services/Dto/Commands/CreateAplicacionCommand.php',
+        'UpdateAplicacionCommand' => 'Application/Services/Dto/Commands/UpdateAplicacionCommand.php',
+        'DeleteAplicacionCommand' => 'Application/Services/Dto/Commands/DeleteAplicacionCommand.php',
+        'GetAplicacionByIdQuery' => 'Application/Services/Dto/Queries/GetAplicacionByIdQuery.php',
+        'GetAllAplicacionesQuery' => 'Application/Services/Dto/Queries/GetAllAplicacionesQuery.php',
+
+        'CreateAplicacionService' => 'Application/Services/CreateAplicacionService.php',
+        'UpdateAplicacionService' => 'Application/Services/UpdateAplicacionService.php',
+        'GetAplicacionByIdService' => 'Application/Services/GetAplicacionByIdService.php',
+        'GetAllAplicacionesService' => 'Application/Services/GetAllAplicacionesService.php',
+        'DeleteAplicacionService' => 'Application/Services/DeleteAplicacionService.php',
+        'AplicacionApplicationMapper' => 'Application/Services/Mappers/AplicacionApplicationMapper.php',
+
+        'AplicacionPersistenceDto' => 'Infrastructure/Adapters/Persistence/MySQL/Dto/AplicacionPersistenceDto.php',
+        'AplicacionEntity' => 'Infrastructure/Adapters/Persistence/MySQL/Entity/AplicacionEntity.php',
+        'AplicacionPersistenceMapper' => 'Infrastructure/Adapters/Persistence/MySQL/Mapper/AplicacionPersistenceMapper.php',
+        'AplicacionRepositoryMySQL' => 'Infrastructure/Adapters/Persistence/MySQL/Repository/AplicacionRepositoryMySQL.php',
+
+        'CreateAplicacionWebRequest' => 'Infrastructure/Entrypoints/Web/Controllers/Dto/CreateAplicacionRequest.php',
+        'UpdateAplicacionWebRequest' => 'Infrastructure/Entrypoints/Web/Controllers/Dto/UpdateAplicacionRequest.php',
+        'AplicacionResponse' => 'Infrastructure/Entrypoints/Web/Controllers/Dto/AplicacionResponse.php',
+        'AplicacionWebMapper' => 'Infrastructure/Entrypoints/Web/Controllers/Mapper/AplicacionWebMapper.php',
+        'AplicacionController' => 'Infrastructure/Entrypoints/Web/Controllers/AplicacionController.php',
+        'AplicacionForm' => 'Infrastructure/Entrypoints/Web/Presentation/AplicacionForm.php',
+
         'DependencyInjection' => 'Common/DependencyInjection.php',
     );
 

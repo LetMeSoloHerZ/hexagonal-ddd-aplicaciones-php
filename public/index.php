@@ -182,6 +182,92 @@ try {
             View::redirect('users.index');
             break;
 
+        // ──────────────────────────────────────────────────────────
+        // Aplicaciones (ejercicio 21). Todas requieren sesión iniciada.
+        // ──────────────────────────────────────────────────────────
+
+        case 'aplicaciones.index':
+            $aplicacionController = DependencyInjection::getAplicacionController();
+            View::render('aplicaciones/list', array(
+                'pageTitle' => 'Lista de aplicaciones',
+                'aplicaciones' => $aplicacionController->index(),
+                'message' => Flash::message(),
+                'success' => Flash::success(),
+            ));
+            break;
+
+        case 'aplicaciones.create':
+            View::render(
+                'aplicaciones/create',
+                buildAplicacionFormViewData(AplicacionForm::defaults(), 'Registrar aplicación')
+            );
+            break;
+
+        case 'aplicaciones.store':
+            $aplicacionController = DependencyInjection::getAplicacionController();
+            $form = AplicacionForm::fromPost();
+            $errors = AplicacionForm::validate($form);
+
+            if (!empty($errors)) {
+                Flash::setOld($form);
+                Flash::setErrors($errors);
+                Flash::setMessage('Corrige los errores del formulario.');
+                View::redirect('aplicaciones.create');
+            }
+
+            $aplicacionController->store(AplicacionForm::toCreateRequest($form, generateUuid4()));
+
+            Flash::setSuccess('Aplicación registrada correctamente.');
+            View::redirect('aplicaciones.index');
+            break;
+
+        case 'aplicaciones.show':
+            $aplicacionController = DependencyInjection::getAplicacionController();
+            $id = isset($_GET['id']) ? trim((string) $_GET['id']) : '';
+            View::render('aplicaciones/show', array(
+                'pageTitle' => 'Detalle de aplicación',
+                'aplicacion' => $aplicacionController->show($id),
+                'message' => Flash::message(),
+            ));
+            break;
+
+        case 'aplicaciones.edit':
+            $aplicacionController = DependencyInjection::getAplicacionController();
+            $id = isset($_GET['id']) ? trim((string) $_GET['id']) : '';
+            $aplicacion = $aplicacionController->show($id);
+            View::render(
+                'aplicaciones/edit',
+                buildAplicacionFormViewData($aplicacion->toFormValues(), 'Editar aplicación')
+            );
+            break;
+
+        case 'aplicaciones.update':
+            $aplicacionController = DependencyInjection::getAplicacionController();
+            $form = AplicacionForm::fromPost();
+            $errors = AplicacionForm::validate($form);
+
+            if (!empty($errors)) {
+                Flash::setOld($form);
+                Flash::setErrors($errors);
+                Flash::setMessage('Corrige los errores del formulario.');
+                header('Location: ?route=aplicaciones.edit&id=' . urlencode($form['id']));
+                exit;
+            }
+
+            $aplicacionController->update(AplicacionForm::toUpdateRequest($form));
+
+            Flash::setSuccess('Aplicación actualizada correctamente.');
+            View::redirect('aplicaciones.index');
+            break;
+
+        case 'aplicaciones.delete':
+            $aplicacionController = DependencyInjection::getAplicacionController();
+            $id = isset($_POST['id']) ? trim((string) $_POST['id']) : '';
+            $aplicacionController->delete($id);
+            Flash::setSuccess('Aplicación eliminada correctamente.');
+            View::redirect('aplicaciones.index');
+            break;
+
         case 'login':
             if (isLoggedIn()) {
                 View::redirect('home');
@@ -296,6 +382,23 @@ try {
             header('Location: ?route=users.edit&id=' . urlencode($updateId));
             exit;
 
+        case 'aplicaciones.store':
+            Flash::setOld(AplicacionForm::fromPost());
+            View::redirect('aplicaciones.create');
+            break;
+
+        case 'aplicaciones.update':
+            $updateAppId = trim((string) ($_POST['id'] ?? ''));
+            Flash::setOld(AplicacionForm::fromPost());
+            header('Location: ?route=aplicaciones.edit&id=' . urlencode($updateAppId));
+            exit;
+
+        case 'aplicaciones.show':
+        case 'aplicaciones.edit':
+        case 'aplicaciones.delete':
+            View::redirect('aplicaciones.index');
+            break;
+
         case 'auth.authenticate':
             Flash::setOld(array('email' => trim(strtolower((string) ($_POST['email'] ?? '')))));
             View::redirect('auth.login');
@@ -399,6 +502,28 @@ function buildEditUserViewData(UserResponse $user): array
         'message' => Flash::message(),
         'errors' => Flash::errors(),
         'old' => Flash::old(),
+    );
+}
+
+
+/**
+ * Datos para las vistas de registro/edición de aplicaciones.
+ * Si hay datos "viejos" en la sesión flash (formulario con errores), tienen prioridad.
+ *
+ * @param array<string, string> $values
+ * @return array<string, mixed>
+ */
+function buildAplicacionFormViewData(array $values, string $title): array
+{
+    return array(
+        'pageTitle' => $title,
+        'values' => array_merge($values, Flash::old()),
+        'errors' => Flash::errors(),
+        'message' => Flash::message(),
+        'success' => Flash::success(),
+        'categoriaOptions' => CategoriaAplicacionEnum::values(),
+        'sistemaOperativoOptions' => SistemaOperativoEnum::values(),
+        'licenciaOptions' => LicenciaEnum::values(),
     );
 }
 

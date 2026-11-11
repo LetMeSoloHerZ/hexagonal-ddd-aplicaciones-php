@@ -1,0 +1,1075 @@
+{
+  "info": {
+    "name": "Ejercicio 21 - Aplicaciones (hexagonal PHP)",
+    "description": "Pruebas del CRUD de Aplicación. La app usa sesión (cookie PHPSESSID) y formularios; las respuestas son redirecciones 302 o HTML. Ejecuta las carpetas en orden con Collection Runner (0 -> 1 -> 2).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Autenticación",
+      "item": [
+        {
+          "name": "0.1 Sin sesión: listar aplicaciones exige login",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.index",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.index"
+                }
+              ]
+            },
+            "description": "Las rutas de Aplicación no están en publicActions: sin sesión deben redirigir al login."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Borra las cookies para simular un visitante anónimo",
+                  "pm.cookies.jar().clear(pm.request.url, () => {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sin sesión: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Sin sesión: redirige a route=auth.login', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=auth.login'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "0.2 Login con credenciales inválidas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=auth.authenticate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "auth.authenticate"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{adminEmail}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "clave-incorrecta",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login inválido: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Login inválido: redirige a route=auth.login', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=auth.login'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "0.3 Login como administrador",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=auth.authenticate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "auth.authenticate"
+                }
+              ]
+            },
+            "description": "Postman guarda la cookie PHPSESSID automáticamente; las siguientes peticiones quedan autenticadas.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "{{adminEmail}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login válido: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Login válido: redirige a route=home', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=home'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. CRUD de Aplicación",
+      "item": [
+        {
+          "name": "1.1 Formulario de registro (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.create",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.create"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('appNombre', 'App Postman ' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Incluye el campo nombre', () => pm.expect(pm.response.text()).to.include('name=\"nombre\"'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.2 Registrar aplicación inválida (bits=16, GRATUITA con precio)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.store",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.store"
+                }
+              ]
+            },
+            "description": "La validación del formulario devuelve al usuario a 'aplicaciones.create' con los errores en sesión.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "nombre",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "proveedor",
+                  "value": "ACME",
+                  "type": "text"
+                },
+                {
+                  "key": "categoria",
+                  "value": "OTRA",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajePrincipal",
+                  "value": "PHP",
+                  "type": "text"
+                },
+                {
+                  "key": "numBits",
+                  "value": "16",
+                  "type": "text"
+                },
+                {
+                  "key": "sistemaOperativo",
+                  "value": "LINUX",
+                  "type": "text"
+                },
+                {
+                  "key": "licencia",
+                  "value": "GRATUITA",
+                  "type": "text"
+                },
+                {
+                  "key": "precio",
+                  "value": "5",
+                  "type": "text"
+                },
+                {
+                  "key": "correo",
+                  "value": "no-es-correo",
+                  "type": "text"
+                },
+                {
+                  "key": "tamanoInstalador",
+                  "value": "0",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Registro inválido: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Registro inválido: redirige a route=aplicaciones.create', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=aplicaciones.create'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.3 Registrar aplicación válida",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.store",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.store"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "nombre",
+                  "value": "{{appNombre}}",
+                  "type": "text"
+                },
+                {
+                  "key": "proveedor",
+                  "value": "ACME S.A.",
+                  "type": "text"
+                },
+                {
+                  "key": "categoria",
+                  "value": "DESARROLLO",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajePrincipal",
+                  "value": "PHP",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajeSecundario",
+                  "value": "JavaScript",
+                  "type": "text"
+                },
+                {
+                  "key": "usaBd",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "requiereConexionRed",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "numBits",
+                  "value": "64",
+                  "type": "text"
+                },
+                {
+                  "key": "sistemaOperativo",
+                  "value": "MULTIPLATAFORMA",
+                  "type": "text"
+                },
+                {
+                  "key": "requisitosHardware",
+                  "value": "4 GB de RAM",
+                  "type": "text"
+                },
+                {
+                  "key": "licencia",
+                  "value": "COMERCIAL",
+                  "type": "text"
+                },
+                {
+                  "key": "precio",
+                  "value": "19.99",
+                  "type": "text"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Aplicacion creada desde Postman",
+                  "type": "text"
+                },
+                {
+                  "key": "web",
+                  "value": "https://acme.example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "correo",
+                  "value": "contacto@acme.example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "tamanoInstalador",
+                  "value": "120.5",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Registro válido: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Registro válido: redirige a route=aplicaciones.index', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=aplicaciones.index'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.4 Listar aplicaciones y capturar el id creado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.index",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.index"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const html = pm.response.text();",
+                  "const nombre = pm.collectionVariables.get('appNombre');",
+                  "pm.test('La aplicación creada aparece en la lista', () => pm.expect(html).to.include(nombre));",
+                  "pm.test('Se muestra el mensaje de éxito', () => pm.expect(html).to.include('Aplicación registrada correctamente.'));",
+                  "const esc = nombre.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');",
+                  "const m = html.match(new RegExp(esc + '[\\\\s\\\\S]*?aplicaciones\\\\.show&(?:amp;)?id=([0-9a-f-]{36})'));",
+                  "pm.test('Se pudo extraer el id (UUID)', () => pm.expect(m).to.not.be.null);",
+                  "if (m) { pm.collectionVariables.set('appId', m[1]); }"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.5 Registrar nombre duplicado",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.store",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.store"
+                }
+              ]
+            },
+            "description": "Mismo nombre que 1.3: el servicio de aplicación lo rechaza y vuelve al formulario.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "nombre",
+                  "value": "{{appNombre}}",
+                  "type": "text"
+                },
+                {
+                  "key": "proveedor",
+                  "value": "ACME S.A.",
+                  "type": "text"
+                },
+                {
+                  "key": "categoria",
+                  "value": "DESARROLLO",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajePrincipal",
+                  "value": "PHP",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajeSecundario",
+                  "value": "JavaScript",
+                  "type": "text"
+                },
+                {
+                  "key": "usaBd",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "requiereConexionRed",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "numBits",
+                  "value": "64",
+                  "type": "text"
+                },
+                {
+                  "key": "sistemaOperativo",
+                  "value": "MULTIPLATAFORMA",
+                  "type": "text"
+                },
+                {
+                  "key": "requisitosHardware",
+                  "value": "4 GB de RAM",
+                  "type": "text"
+                },
+                {
+                  "key": "licencia",
+                  "value": "COMERCIAL",
+                  "type": "text"
+                },
+                {
+                  "key": "precio",
+                  "value": "19.99",
+                  "type": "text"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Aplicacion creada desde Postman",
+                  "type": "text"
+                },
+                {
+                  "key": "web",
+                  "value": "https://acme.example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "correo",
+                  "value": "contacto@acme.example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "tamanoInstalador",
+                  "value": "120.5",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Duplicado: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Duplicado: redirige a route=aplicaciones.create', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=aplicaciones.create'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.6 Ver detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.show&id={{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.show"
+                },
+                {
+                  "key": "id",
+                  "value": "{{appId}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Muestra el nombre', () => pm.expect(pm.response.text()).to.include(pm.collectionVariables.get('appNombre')));",
+                  "pm.test('Muestra el proveedor', () => pm.expect(pm.response.text()).to.include('ACME S.A.'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.7 Formulario de edición (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.edit&id={{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.edit"
+                },
+                {
+                  "key": "id",
+                  "value": "{{appId}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Precarga el precio', () => pm.expect(pm.response.text()).to.include('value=\"19.99\"'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.8 Actualizar aplicación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.update",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.update"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "{{appId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "nombre",
+                  "value": "{{appNombre}} (editada)",
+                  "type": "text"
+                },
+                {
+                  "key": "proveedor",
+                  "value": "ACME Labs",
+                  "type": "text"
+                },
+                {
+                  "key": "categoria",
+                  "value": "JUEGOS",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajePrincipal",
+                  "value": "Java",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajeSecundario",
+                  "value": "Kotlin",
+                  "type": "text"
+                },
+                {
+                  "key": "numBits",
+                  "value": "32",
+                  "type": "text"
+                },
+                {
+                  "key": "sistemaOperativo",
+                  "value": "ANDROID",
+                  "type": "text"
+                },
+                {
+                  "key": "licencia",
+                  "value": "FREEMIUM",
+                  "type": "text"
+                },
+                {
+                  "key": "precio",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "correo",
+                  "value": "soporte@acme.example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "tamanoInstalador",
+                  "value": "45",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Actualización: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Actualización: redirige a route=aplicaciones.index', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=aplicaciones.index'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.9 Verificar actualización en el detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.show&id={{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.show"
+                },
+                {
+                  "key": "id",
+                  "value": "{{appId}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const h = pm.response.text();",
+                  "pm.test('Proveedor actualizado', () => pm.expect(h).to.include('ACME Labs'));",
+                  "pm.test('Licencia actualizada', () => pm.expect(h).to.include('FREEMIUM'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.10 Actualizar con datos inválidos (COMERCIAL con precio 0)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.update",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.update"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "{{appId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "nombre",
+                  "value": "{{appNombre}}",
+                  "type": "text"
+                },
+                {
+                  "key": "proveedor",
+                  "value": "ACME",
+                  "type": "text"
+                },
+                {
+                  "key": "categoria",
+                  "value": "OTRA",
+                  "type": "text"
+                },
+                {
+                  "key": "lenguajePrincipal",
+                  "value": "PHP",
+                  "type": "text"
+                },
+                {
+                  "key": "numBits",
+                  "value": "64",
+                  "type": "text"
+                },
+                {
+                  "key": "sistemaOperativo",
+                  "value": "LINUX",
+                  "type": "text"
+                },
+                {
+                  "key": "licencia",
+                  "value": "COMERCIAL",
+                  "type": "text"
+                },
+                {
+                  "key": "precio",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "correo",
+                  "value": "a@b.co",
+                  "type": "text"
+                },
+                {
+                  "key": "tamanoInstalador",
+                  "value": "10",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Update inválido: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Update inválido: redirige a route=aplicaciones.edit', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=aplicaciones.edit'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.11 Eliminar aplicación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.delete"
+                }
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "id",
+                  "value": "{{appId}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Eliminación: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Eliminación: redirige a route=aplicaciones.index', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=aplicaciones.index'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.12 Ver aplicación eliminada (no existe)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.show&id={{appId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.show"
+                },
+                {
+                  "key": "id",
+                  "value": "{{appId}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('No encontrada: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('No encontrada: redirige a route=aplicaciones.index', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=aplicaciones.index'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "1.13 Método incorrecto: GET sobre ruta POST",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=aplicaciones.store",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "aplicaciones.store"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 405 Method Not Allowed', () => pm.response.to.have.status(405));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Cierre de sesión",
+      "item": [
+        {
+          "name": "2.1 Cerrar sesión",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}?route=auth.logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "route",
+                  "value": "auth.logout"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Logout: responde 302', () => pm.response.to.have.status(302));",
+                  "pm.test('Logout: redirige a route=auth.login', () => pm.expect(pm.response.headers.get('Location') || '').to.include('route=auth.login'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/public/index.php"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@crud.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "admin123"
+    },
+    {
+      "key": "appNombre",
+      "value": ""
+    },
+    {
+      "key": "appId",
+      "value": ""
+    }
+  ]
+}
