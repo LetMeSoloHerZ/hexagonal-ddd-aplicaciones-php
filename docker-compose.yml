@@ -1,0 +1,41 @@
+# ============================================================
+# Entorno local con Docker:  docker compose up --build
+#   App:   http://localhost:8081/public/index.php
+#   MySQL: localhost:3307 (usuario root / clave root_local)
+# Los scripts SQL del proyecto se ejecutan solo la primera vez
+# que se crea el volumen (para repetirlo: docker compose down -v).
+# ============================================================
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_local
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./Infrastructure/Adapters/Persistence/MySQL/Database/mysql/database.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+      - ./Infrastructure/Adapters/Persistence/MySQL/Database/mysql/aplicaciones.sql:/docker-entrypoint-initdb.d/02-aplicaciones.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot_local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    ports:
+      - "8081:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: crud_usuarios
+      DB_USERNAME: root
+      DB_PASSWORD: root_local
+      DB_SSL: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

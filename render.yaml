@@ -1,0 +1,25 @@
+# Blueprint de Render: crea el servicio web desde el Dockerfile.
+# La base de datos vive en TiDB Cloud (MySQL compatible), no en Render.
+# Las variables marcadas sync:false se escriben a mano en el panel de Render
+# la primera vez; nunca se suben al repositorio.
+services:
+  - type: web
+    name: aplicaciones-php
+    runtime: docker
+    plan: free
+    branch: main
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_DATABASE
+        value: crud_usuarios
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSL
+        value: "true"
