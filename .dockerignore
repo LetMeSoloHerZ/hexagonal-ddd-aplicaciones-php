@@ -1,0 +1,9 @@
+.git
+.github
+.gitignore
+.env
+.env.*
+!.env.example
+.vscode
+docs
+postman

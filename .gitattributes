@@ -1,0 +1,5 @@
+# Los scripts y archivos de contenedor deben conservar saltos de linea LF
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
