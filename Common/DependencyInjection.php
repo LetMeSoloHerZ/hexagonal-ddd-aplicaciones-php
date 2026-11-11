@@ -229,4 +229,25 @@ final class DependencyInjection
             $repository
         );
     }
+
+    public static function getAplicacionWebMapper(): AplicacionWebMapper
+    {
+        ClassLoader::loadClass('AplicacionWebMapper');
+
+        return new AplicacionWebMapper();
+    }
+
+    public static function getAplicacionController(): AplicacionController
+    {
+        ClassLoader::loadClass('AplicacionController');
+
+        return new AplicacionController(
+            self::getCreateAplicacionUseCase(),
+            self::getUpdateAplicacionUseCase(),
+            self::getGetAplicacionByIdUseCase(),
+            self::getGetAllAplicacionesUseCase(),
+            self::getDeleteAplicacionUseCase(),
+            self::getAplicacionWebMapper()
+        );
+    }
 }

@@ -42,6 +42,34 @@ final class WebRoutes
                 'method' => 'POST',
                 'action' => 'delete',
             ),
+            'aplicaciones.index' => array(
+                'method' => 'GET',
+                'action' => 'aplicaciones.index',
+            ),
+            'aplicaciones.create' => array(
+                'method' => 'GET',
+                'action' => 'aplicaciones.create',
+            ),
+            'aplicaciones.store' => array(
+                'method' => 'POST',
+                'action' => 'aplicaciones.store',
+            ),
+            'aplicaciones.show' => array(
+                'method' => 'GET',
+                'action' => 'aplicaciones.show',
+            ),
+            'aplicaciones.edit' => array(
+                'method' => 'GET',
+                'action' => 'aplicaciones.edit',
+            ),
+            'aplicaciones.update' => array(
+                'method' => 'POST',
+                'action' => 'aplicaciones.update',
+            ),
+            'aplicaciones.delete' => array(
+                'method' => 'POST',
+                'action' => 'aplicaciones.delete',
+            ),
             'auth.login' => array(
                 'method' => 'GET',
                 'action' => 'login',

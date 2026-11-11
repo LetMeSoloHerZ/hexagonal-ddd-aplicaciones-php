@@ -127,6 +127,13 @@ final class ClassLoader
         'AplicacionPersistenceMapper' => 'Infrastructure/Adapters/Persistence/MySQL/Mapper/AplicacionPersistenceMapper.php',
         'AplicacionRepositoryMySQL' => 'Infrastructure/Adapters/Persistence/MySQL/Repository/AplicacionRepositoryMySQL.php',
 
+        'CreateAplicacionWebRequest' => 'Infrastructure/Entrypoints/Web/Controllers/Dto/CreateAplicacionRequest.php',
+        'UpdateAplicacionWebRequest' => 'Infrastructure/Entrypoints/Web/Controllers/Dto/UpdateAplicacionRequest.php',
+        'AplicacionResponse' => 'Infrastructure/Entrypoints/Web/Controllers/Dto/AplicacionResponse.php',
+        'AplicacionWebMapper' => 'Infrastructure/Entrypoints/Web/Controllers/Mapper/AplicacionWebMapper.php',
+        'AplicacionController' => 'Infrastructure/Entrypoints/Web/Controllers/AplicacionController.php',
+        'AplicacionForm' => 'Infrastructure/Entrypoints/Web/Presentation/AplicacionForm.php',
+
         'DependencyInjection' => 'Common/DependencyInjection.php',
     );
 
